@@ -127,7 +127,7 @@ class PolicyIteration:
 
 def run_policy_iteration():
     # Create environment
-    env = GridMazeEnv(grid_size=5, goal_pos=[(4,4)], mines=[(1,3), (3,2)], 
+    env = GridMazeEnv(grid_size=5,player_pos=(2,2), goal_pos=[(4,4),(0,4)], mines=[(1,3), (3,2)], 
                       rnd=True, render_mode="rgb_array")
     
 

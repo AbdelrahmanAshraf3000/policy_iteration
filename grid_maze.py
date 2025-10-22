@@ -8,7 +8,7 @@ from gymnasium import spaces
 class GridMazeEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 2}
 
-    def __init__(self, grid_size=5, goal_pos=[(4, 4)], mines=[(1, 1), (2, 3)], cell_size=100, render_mode="human",rnd=True):
+    def __init__(self, grid_size=5, player_pos=(0, 0), goal_pos=[(4, 4)], mines=[(1, 1), (2, 3)], cell_size=100, render_mode="human", rnd=True):
 
         super().__init__()
         self.grid_size = grid_size
@@ -22,10 +22,10 @@ class GridMazeEnv(gym.Env):
         if rnd:
             self.goal_pos = [ (random.randint(0, self.grid_size-1), random.randint(0, self.grid_size-1)) ]
             self.mines = set()
-            for _ in range(len(mines)):
+            for _ in range(2):
                 while True:
                     mine = (random.randint(0, self.grid_size-1), random.randint(0, self.grid_size-1))
-                    if mine not in self.goal_pos:
+                    if mine not in self.goal_pos and mine not in self.mines:
                         self.mines.add(mine)
                         break
             while True: 
@@ -38,7 +38,7 @@ class GridMazeEnv(gym.Env):
         else:
             self.goal_pos = goal_pos
             self.mines = set(mines)  
-            self.agent_pos = np.array([0, 0])  # will be set in reset()
+            self.agent_pos = np.array(player_pos) 
 
 
         # PyGame setup
@@ -48,16 +48,6 @@ class GridMazeEnv(gym.Env):
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
-        # Random player position that is not goal or mine
-        if self.rnd:
-            while True: 
-                pos = np.array([random.randint(0, self.grid_size-1),
-                                random.randint(0, self.grid_size-1)])
-                if tuple(pos) not in self.goal_pos and tuple(pos) not in self.mines:
-                    self.agent_pos = pos
-                    break
-        else:
-            self.agent_pos = np.array([0, 0])
         return self.agent_pos, {} #(observation, info)
 
     def step(self, action):
@@ -99,7 +89,7 @@ class GridMazeEnv(gym.Env):
             reward = -10
             done = True
         else:
-            reward = -0.1
+            reward = -0.5
             done = False
 
         return self.agent_pos, reward, done, False, {} #(observation, reward, terminated, truncated [due to time limit], info)
@@ -215,7 +205,7 @@ class GridMazeEnv(gym.Env):
             return 10
         elif next_state in self.mines:
             return -10
-        return -0.1
+        return -0.5
 
     def is_terminal(self, state):
         """Check if a state is terminal"""
